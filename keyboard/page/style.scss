@@ -8,6 +8,7 @@ body {
 .textarea {
     width: 80%;
     max-width: 1000px;
+    min-width: 924px;
 }
 
 .keyboard {
@@ -16,6 +17,8 @@ body {
     border-radius: 10px;
     padding: 1%;
     max-width: 1000px;
+    min-width: 924px;
+    user-select: none;
 }
 
 .keyboard__keys {
@@ -41,7 +44,7 @@ body {
 }
 
 .keyboard__key:active {
-    background-color: rgba($color: #ffffff, $alpha: 0.6);
+    background-color: rgba($color: #ffffff, $alpha: 0.4);
 }
 
 .keyboard__key--wide {

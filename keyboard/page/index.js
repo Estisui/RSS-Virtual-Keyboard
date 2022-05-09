@@ -4,16 +4,17 @@ const KEYBOARD = {
     main: null,
     keysContainer: null,
     keys: [],
+    shiftKeys: [],
   },
 
   eventHandlers: {
     oninput: null,
-    onclose: null,
   },
 
   properties: {
     value: '',
     capsLock: false,
+    shift: false,
   },
 
   init() {
@@ -28,10 +29,14 @@ const KEYBOARD = {
     this.elements.textArea.classList.add('textarea');
     this.elements.keysContainer.appendChild(this.createKeys());
 
+    this.elements.keys = this.elements.keysContainer.querySelectorAll('.keyboard__key');
+
     // add to DOM
     this.elements.main.appendChild(this.elements.keysContainer);
     document.body.appendChild(this.elements.textArea);
     document.body.appendChild(this.elements.main);
+
+    document.addEventListener('oninput', this.triggerEvent());
   },
 
   createKeys() {
@@ -68,6 +73,10 @@ const KEYBOARD = {
         case 'tab':
           keyElement.classList.add('keyboard__key--wide');
           keyElement.innerHTML = createIconHTML('keyboard_tab');
+          keyElement.addEventListener('click', () => {
+            this.properties.value += '\t';
+            this.triggerEvent('oninput');
+          });
           break;
         case 'caps':
           keyElement.classList.add('keyboard__key--wide', 'keyboard__key--activadable');
@@ -89,6 +98,8 @@ const KEYBOARD = {
         case 'shift2':
           keyElement.classList.add('keyboard__key--wide');
           keyElement.innerHTML = createIconHTML('keyboard_double_arrow_up');
+          keyElement.addEventListener('mousedown', KEYBOARD.toggleShift);
+          this.elements.shiftKeys.push(keyElement);
           break;
         case 'up':
           keyElement.innerHTML = createIconHTML('arrow_drop_up');
@@ -140,8 +151,11 @@ const KEYBOARD = {
           keyElement.textContent = key.toLowerCase();
 
           keyElement.addEventListener('click', () => {
-            this.properties.value
-            += this.properties.capsLock ? key.toUpperCase() : key.toLocaleLowerCase;
+            if (this.properties.capsLock === this.properties.shift) {
+              this.properties.value += key.toLowerCase();
+            } else {
+              this.properties.value += key.toUpperCase();
+            }
             this.triggerEvent('oninput');
           });
 
@@ -159,11 +173,62 @@ const KEYBOARD = {
   },
 
   triggerEvent(handlerName) {
-    console.log('Event triggered!');
+    this.elements.textArea.value = this.properties.value;
   },
 
   toggleCapsLock() {
-    console.log('CapsLock');
+    this.properties.capsLock = !this.properties.capsLock;
+
+    /* eslint-disable-next-line */
+    for (const key of this.elements.keys) {
+      if (key.childElementCount === 0) {
+        if (this.properties.capsLock === this.properties.shift) {
+          key.textContent = key.textContent.toLowerCase();
+        } else {
+          key.textContent = key.textContent.toUpperCase();
+        }
+      }
+    }
+  },
+
+  toggleShift() {
+    KEYBOARD.properties.shift = !KEYBOARD.properties.shift;
+    KEYBOARD.elements.shiftKeys.forEach((element) => {
+      element.removeEventListener('mousedown', KEYBOARD.toggleShift);
+    });
+    /* eslint-disable-next-line */
+    for (const key of KEYBOARD.elements.keys) {
+      if (key.childElementCount === 0) {
+        if (KEYBOARD.properties.capsLock === KEYBOARD.properties.shift) {
+          key.textContent = key.textContent.toLowerCase();
+        } else {
+          key.textContent = key.textContent.toUpperCase();
+        }
+      }
+    }
+    KEYBOARD.elements.shiftKeys.forEach((element) => {
+      element.addEventListener('mouseup', KEYBOARD.untoggleShift);
+    });
+  },
+
+  untoggleShift() {
+    KEYBOARD.properties.shift = !KEYBOARD.properties.shift;
+    KEYBOARD.elements.shiftKeys.forEach((element) => {
+      element.removeEventListener('mouseup', KEYBOARD.untoggleShift);
+    });
+    /* eslint-disable-next-line */
+    for (const key of KEYBOARD.elements.keys) {
+      if (key.childElementCount === 0) {
+        if (KEYBOARD.properties.capsLock === KEYBOARD.properties.shift) {
+          key.textContent = key.textContent.toLowerCase();
+        } else {
+          key.textContent = key.textContent.toUpperCase();
+        }
+      }
+    }
+    KEYBOARD.elements.shiftKeys.forEach((element) => {
+      element.addEventListener('mousedown', KEYBOARD.toggleShift);
+    });
   },
 };
 
