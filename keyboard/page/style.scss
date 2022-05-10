@@ -47,6 +47,10 @@ body {
     background-color: rgba($color: #ffffff, $alpha: 0.4);
 }
 
+.active {
+    background-color: rgba($color: #ffffff, $alpha: 0.4);
+}
+
 .keyboard__key--wide {
     @extend .keyboard__key;
     width: 12%;
