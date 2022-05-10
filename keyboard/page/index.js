@@ -15,6 +15,7 @@ const KEYBOARD = {
     value: '',
     capsLock: false,
     shift: false,
+    english: true,
   },
 
   init() {
@@ -26,6 +27,9 @@ const KEYBOARD = {
     const LINKBLOCK = document.createElement('a');
     const TEXTBLOCK = document.createElement('p');
 
+    // language
+    this.properties.english = (typeof localStorage.getItem('english') !== 'undefined' ? (localStorage.getItem('english') === 'true') : true);
+
     // setup
     this.elements.main.classList.add('keyboard');
     this.elements.keysContainer.classList.add('keyboard__keys');
@@ -36,7 +40,7 @@ const KEYBOARD = {
 
     LINKBLOCK.href = 'https://github.com/Estisui/RSS-Virtual-Keyboard/pulls';
     LINKBLOCK.innerText = 'Link to pull request';
-    TEXTBLOCK.innerText = 'Немножко не успел доделать смену языков (и pull request, соответственно), так что если есть возможность проверьте сегодня попозже 🥺🥺🥺';
+    TEXTBLOCK.innerText = 'Created on Windows - Alt+Shift for language change';
     // add to DOM
     this.elements.main.appendChild(this.elements.keysContainer);
     document.body.appendChild(this.elements.textArea);
@@ -45,7 +49,7 @@ const KEYBOARD = {
     document.body.appendChild(TEXTBLOCK);
 
     document.addEventListener('keydown', (event) => {
-      this.keyPressed(event.code, event.repeat);
+      this.keyPressed(event.code, event.repeat, event.altKey);
     });
     document.addEventListener('keyup', (event) => {
       this.keyUnpressed(event.code);
@@ -56,10 +60,10 @@ const KEYBOARD = {
   createKeys() {
     const fragment = document.createDocumentFragment();
     const keyLayout = [
-      ['Backquote', '`'], ['Digit1', '1'], ['Digit2', '2'], ['Digit3', '3'], ['Digit4', '4'], ['Digit5', '5'], ['Digit6', '6'], ['Digit7', '7'], ['Digit8', '8'], ['Digit9', '9'], ['Digit0', '0'], ['Minus', '-'], ['Equal', '='], ['Backspace', 'backspace'],
-      ['Tab', 'tab'], ['KeyQ', 'q'], ['KeyW', 'w'], ['KeyE', 'e'], ['KeyR', 'r'], ['KeyT', 't'], ['KeyY', 'y'], ['KeyU', 'u'], ['KeyI', 'i'], ['KeyO', 'o'], ['KeyP', 'p'], ['BracketLeft', '['], ['BracketRight', ']'], ['Backslash', '\\'],
-      ['CapsLock', 'caps'], ['KeyA', 'a'], ['KeyS', 's'], ['KeyD', 'd'], ['KeyF', 'f'], ['KeyG', 'g'], ['KeyH', 'h'], ['KeyJ', 'j'], ['KeyK', 'k'], ['KeyL', 'l'], ['Semicolon', ';'], ['Quote', '\''], ['Enter', 'enter'],
-      ['ShiftLeft', 'shift'], ['KeyZ', 'z'], ['KeyX', 'x'], ['KeyC', 'c'], ['KeyV', 'v'], ['KeyB', 'b'], ['KeyN', 'n'], ['KeyM', 'm'], ['Comma', ','], ['Period', '.'], ['Slash', '/'], ['ArrowUp', 'up'], ['ShiftRight', 'shift2'],
+      ['Backquote', '`', 'ё'], ['Digit1', '1'], ['Digit2', '2'], ['Digit3', '3'], ['Digit4', '4'], ['Digit5', '5'], ['Digit6', '6'], ['Digit7', '7'], ['Digit8', '8'], ['Digit9', '9'], ['Digit0', '0'], ['Minus', '-'], ['Equal', '='], ['Backspace', 'backspace'],
+      ['Tab', 'tab'], ['KeyQ', 'q', 'й'], ['KeyW', 'w', 'ц'], ['KeyE', 'e', 'у'], ['KeyR', 'r', 'к'], ['KeyT', 't', 'е'], ['KeyY', 'y', 'н'], ['KeyU', 'u', 'г'], ['KeyI', 'i', 'ш'], ['KeyO', 'o', 'щ'], ['KeyP', 'p', 'з'], ['BracketLeft', '[', 'х'], ['BracketRight', ']', 'ъ'], ['Backslash', '\\'],
+      ['CapsLock', 'caps'], ['KeyA', 'a', 'ф'], ['KeyS', 's', 'ы'], ['KeyD', 'd', 'в'], ['KeyF', 'f', 'а'], ['KeyG', 'g', 'п'], ['KeyH', 'h', 'р'], ['KeyJ', 'j', 'о'], ['KeyK', 'k', 'л'], ['KeyL', 'l', 'д'], ['Semicolon', ';', 'ж'], ['Quote', '\'', 'э'], ['Enter', 'enter'],
+      ['ShiftLeft', 'shift'], ['KeyZ', 'z', 'я'], ['KeyX', 'x', 'ч'], ['KeyC', 'c', 'с'], ['KeyV', 'v', 'м'], ['KeyB', 'b', 'и'], ['KeyN', 'n', 'т'], ['KeyM', 'm', 'ь'], ['Comma', ',', 'б'], ['Period', '.', 'ю'], ['Slash', '/', '.'], ['ArrowUp', 'up'], ['ShiftRight', 'shift2'],
       ['ControlLeft', 'ctrl'], ['MetaLeft', 'win'], ['AltLeft', 'alt'], ['Space', 'space'], ['AltRight', 'alt'], ['ArrowLeft', 'left'], ['ArrowDown', 'down'], ['ArrowRight', 'right'], ['ControlRight', 'ctrl'],
     ];
 
@@ -73,8 +77,11 @@ const KEYBOARD = {
       // add attributes
       keyElement.setAttribute('type', 'button');
       keyElement.classList.add('keyboard__key');
-      const [keyId, keyValue] = key;
+      const [keyId, keyValue, keyValue2] = key;
       keyElement.id = (keyId);
+      keyElement.engValue = keyValue;
+      const keyRusValue = keyValue2 || keyValue;
+      keyElement.rusValue = keyRusValue;
 
       switch (keyValue) {
         case 'backspace':
@@ -164,13 +171,23 @@ const KEYBOARD = {
           });
           break;
         default:
-          keyElement.textContent = keyValue.toLowerCase();
-
+          if (this.properties.english === true) {
+            keyElement.textContent = keyValue.toLowerCase();
+          } else {
+            keyElement.textContent = keyRusValue.toLowerCase();
+          }
           keyElement.addEventListener('click', () => {
-            if (this.properties.capsLock === this.properties.shift) {
+            if (this.properties.capsLock === this.properties.shift
+              && this.properties.english === true) {
               this.properties.value += keyValue.toLowerCase();
-            } else {
+            } else if (this.properties.capsLock !== this.properties.shift
+              && this.properties.english === true) {
               this.properties.value += keyValue.toUpperCase();
+            } else if (this.properties.capsLock === this.properties.shift
+              && this.properties.english === false) {
+              this.properties.value += keyRusValue.toLowerCase();
+            } else {
+              this.properties.value += keyRusValue.toUpperCase();
             }
             this.triggerEvent('oninput');
           });
@@ -188,7 +205,7 @@ const KEYBOARD = {
     return fragment;
   },
 
-  triggerEvent(handlerName) {
+  triggerEvent() {
     this.elements.textArea.value = this.properties.value;
   },
 
@@ -247,10 +264,13 @@ const KEYBOARD = {
     });
   },
 
-  keyPressed(key, repeat) {
+  keyPressed(key, repeat, altKey) {
     const currentKey = document.getElementById(key);
     currentKey.classList.add('active');
-    if ((key === 'ShiftLeft' || key === 'ShiftRight') && repeat === false) {
+    if ((key === 'ShiftLeft' || key === 'ShiftRight') && altKey === true && repeat === false) {
+      KEYBOARD.untoggleShift();
+      this.changeLanguage();
+    } else if ((key === 'ShiftLeft' || key === 'ShiftRight') && altKey === false && repeat === false) {
       KEYBOARD.toggleShift();
     } else {
       const clickEvent = new Event('click');
@@ -263,6 +283,28 @@ const KEYBOARD = {
     currentKey.classList.remove('active');
     if (key === 'ShiftLeft' || key === 'ShiftRight') {
       KEYBOARD.untoggleShift();
+    }
+  },
+
+  changeLanguage() {
+    this.properties.english = !this.properties.english;
+    localStorage.setItem('english', this.properties.english);
+    /* eslint-disable-next-line */
+    for (const key of this.elements.keys) {
+      if (key.childElementCount === 0) {
+        if (this.properties.capsLock === this.properties.shift
+          && this.properties.english === true) {
+          key.textContent = key.engValue.toLowerCase();
+        } else if (this.properties.capsLock !== this.properties.shift
+          && this.properties.english === true) {
+          key.textContent = key.engValue.toUpperCase();
+        } else if (this.properties.capsLock === this.properties.shift
+          && this.properties.english === false) {
+          key.textContent = key.rusValue.toLowerCase();
+        } else {
+          key.textContent = key.rusValue.toUpperCase();
+        }
+      }
     }
   },
 };
