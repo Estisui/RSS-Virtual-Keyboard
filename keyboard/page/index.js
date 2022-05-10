@@ -283,7 +283,7 @@ const KEYBOARD = {
     if (document.getElementById(key)) {
       const currentKey = document.getElementById(key);
       currentKey.classList.remove('active');
-      if (key === 'ShiftLeft' || key === 'ShiftRight' && altKey === false) {
+      if ((key === 'ShiftLeft' || key === 'ShiftRight') && altKey === false) {
         KEYBOARD.untoggleShift();
       }
     }
