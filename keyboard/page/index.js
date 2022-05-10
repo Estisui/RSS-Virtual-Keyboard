@@ -49,10 +49,10 @@ const KEYBOARD = {
     document.body.appendChild(TEXTBLOCK);
 
     document.addEventListener('keydown', (event) => {
-      this.keyPressed(event.code, event.repeat, event.altKey);
+      this.keyPressed(event.code, event.repeat, event.altKey, event.shiftKey);
     });
     document.addEventListener('keyup', (event) => {
-      this.keyUnpressed(event.code);
+      this.keyUnpressed(event.code, event.altKey);
     });
     document.addEventListener('oninput', this.triggerEvent);
   },
@@ -225,7 +225,7 @@ const KEYBOARD = {
   },
 
   toggleShift() {
-    KEYBOARD.properties.shift = !KEYBOARD.properties.shift;
+    KEYBOARD.properties.shift = true;
     KEYBOARD.elements.shiftKeys.forEach((element) => {
       element.removeEventListener('mousedown', KEYBOARD.toggleShift);
     });
@@ -245,7 +245,7 @@ const KEYBOARD = {
   },
 
   untoggleShift() {
-    KEYBOARD.properties.shift = !KEYBOARD.properties.shift;
+    KEYBOARD.properties.shift = false;
     KEYBOARD.elements.shiftKeys.forEach((element) => {
       element.removeEventListener('mouseup', KEYBOARD.untoggleShift);
     });
@@ -264,25 +264,28 @@ const KEYBOARD = {
     });
   },
 
-  keyPressed(key, repeat, altKey) {
-    const currentKey = document.getElementById(key);
-    currentKey.classList.add('active');
-    if ((key === 'ShiftLeft' || key === 'ShiftRight') && altKey === true && repeat === false) {
-      KEYBOARD.untoggleShift();
-      this.changeLanguage();
-    } else if ((key === 'ShiftLeft' || key === 'ShiftRight') && altKey === false && repeat === false) {
-      KEYBOARD.toggleShift();
-    } else {
-      const clickEvent = new Event('click');
-      currentKey.dispatchEvent(clickEvent);
+  keyPressed(key, repeat, altKey, shiftKey) {
+    if (document.getElementById(key)) {
+      const currentKey = document.getElementById(key);
+      currentKey.classList.add('active');
+      if (shiftKey === true && altKey === true && repeat === false) {
+        this.changeLanguage();
+      } else if ((key === 'ShiftLeft' || key === 'ShiftRight') && altKey === false && repeat === false) {
+        KEYBOARD.toggleShift();
+      } else {
+        const clickEvent = new Event('click');
+        currentKey.dispatchEvent(clickEvent);
+      }
     }
   },
 
-  keyUnpressed(key) {
-    const currentKey = document.getElementById(key);
-    currentKey.classList.remove('active');
-    if (key === 'ShiftLeft' || key === 'ShiftRight') {
-      KEYBOARD.untoggleShift();
+  keyUnpressed(key, altKey) {
+    if (document.getElementById(key)) {
+      const currentKey = document.getElementById(key);
+      currentKey.classList.remove('active');
+      if ((key === 'ShiftLeft' || key === 'ShiftRight') && altKey === false) {
+        KEYBOARD.untoggleShift();
+      }
     }
   },
 
