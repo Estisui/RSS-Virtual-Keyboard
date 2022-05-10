@@ -23,30 +23,44 @@ const KEYBOARD = {
     this.elements.main = document.createElement('div');
     this.elements.keysContainer = document.createElement('div');
 
+    const LINKBLOCK = document.createElement('a');
+    const TEXTBLOCK = document.createElement('p');
+
     // setup
     this.elements.main.classList.add('keyboard');
     this.elements.keysContainer.classList.add('keyboard__keys');
     this.elements.textArea.classList.add('textarea');
+    this.elements.textArea.setAttribute('readonly', true);
     this.elements.keysContainer.appendChild(this.createKeys());
-
     this.elements.keys = this.elements.keysContainer.querySelectorAll('.keyboard__key');
 
+    LINKBLOCK.href = 'https://github.com/Estisui/RSS-Virtual-Keyboard/pulls';
+    LINKBLOCK.innerText = 'Link to pull request';
+    TEXTBLOCK.innerText = 'Немножко не успел доделать смену языков (и pull request, соответственно), так что если есть возможность проверьте сегодня попозже 🥺🥺🥺';
     // add to DOM
     this.elements.main.appendChild(this.elements.keysContainer);
     document.body.appendChild(this.elements.textArea);
     document.body.appendChild(this.elements.main);
+    document.body.appendChild(LINKBLOCK);
+    document.body.appendChild(TEXTBLOCK);
 
-    document.addEventListener('oninput', this.triggerEvent());
+    document.addEventListener('keydown', (event) => {
+      this.keyPressed(event.code, event.repeat);
+    });
+    document.addEventListener('keyup', (event) => {
+      this.keyUnpressed(event.code);
+    });
+    document.addEventListener('oninput', this.triggerEvent);
   },
 
   createKeys() {
     const fragment = document.createDocumentFragment();
     const keyLayout = [
-      '`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'backspace',
-      'tab', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\',
-      'caps', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', 'enter',
-      'shift', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 'up', 'shift2',
-      'ctrl', 'win', 'alt', 'space', 'alt', 'left', 'down', 'right', 'ctrl',
+      ['Backquote', '`'], ['Digit1', '1'], ['Digit2', '2'], ['Digit3', '3'], ['Digit4', '4'], ['Digit5', '5'], ['Digit6', '6'], ['Digit7', '7'], ['Digit8', '8'], ['Digit9', '9'], ['Digit0', '0'], ['Minus', '-'], ['Equal', '='], ['Backspace', 'backspace'],
+      ['Tab', 'tab'], ['KeyQ', 'q'], ['KeyW', 'w'], ['KeyE', 'e'], ['KeyR', 'r'], ['KeyT', 't'], ['KeyY', 'y'], ['KeyU', 'u'], ['KeyI', 'i'], ['KeyO', 'o'], ['KeyP', 'p'], ['BracketLeft', '['], ['BracketRight', ']'], ['Backslash', '\\'],
+      ['CapsLock', 'caps'], ['KeyA', 'a'], ['KeyS', 's'], ['KeyD', 'd'], ['KeyF', 'f'], ['KeyG', 'g'], ['KeyH', 'h'], ['KeyJ', 'j'], ['KeyK', 'k'], ['KeyL', 'l'], ['Semicolon', ';'], ['Quote', '\''], ['Enter', 'enter'],
+      ['ShiftLeft', 'shift'], ['KeyZ', 'z'], ['KeyX', 'x'], ['KeyC', 'c'], ['KeyV', 'v'], ['KeyB', 'b'], ['KeyN', 'n'], ['KeyM', 'm'], ['Comma', ','], ['Period', '.'], ['Slash', '/'], ['ArrowUp', 'up'], ['ShiftRight', 'shift2'],
+      ['ControlLeft', 'ctrl'], ['MetaLeft', 'win'], ['AltLeft', 'alt'], ['Space', 'space'], ['AltRight', 'alt'], ['ArrowLeft', 'left'], ['ArrowDown', 'down'], ['ArrowRight', 'right'], ['ControlRight', 'ctrl'],
     ];
 
     // html icon
@@ -59,8 +73,10 @@ const KEYBOARD = {
       // add attributes
       keyElement.setAttribute('type', 'button');
       keyElement.classList.add('keyboard__key');
+      const [keyId, keyValue] = key;
+      keyElement.id = (keyId);
 
-      switch (key) {
+      switch (keyValue) {
         case 'backspace':
           keyElement.classList.add('keyboard__key--wide');
           keyElement.innerHTML = createIconHTML('backspace');
@@ -148,13 +164,13 @@ const KEYBOARD = {
           });
           break;
         default:
-          keyElement.textContent = key.toLowerCase();
+          keyElement.textContent = keyValue.toLowerCase();
 
           keyElement.addEventListener('click', () => {
             if (this.properties.capsLock === this.properties.shift) {
-              this.properties.value += key.toLowerCase();
+              this.properties.value += keyValue.toLowerCase();
             } else {
-              this.properties.value += key.toUpperCase();
+              this.properties.value += keyValue.toUpperCase();
             }
             this.triggerEvent('oninput');
           });
@@ -229,6 +245,25 @@ const KEYBOARD = {
     KEYBOARD.elements.shiftKeys.forEach((element) => {
       element.addEventListener('mousedown', KEYBOARD.toggleShift);
     });
+  },
+
+  keyPressed(key, repeat) {
+    const currentKey = document.getElementById(key);
+    currentKey.classList.add('active');
+    if ((key === 'ShiftLeft' || key === 'ShiftRight') && repeat === false) {
+      KEYBOARD.toggleShift();
+    } else {
+      const clickEvent = new Event('click');
+      currentKey.dispatchEvent(clickEvent);
+    }
+  },
+
+  keyUnpressed(key) {
+    const currentKey = document.getElementById(key);
+    currentKey.classList.remove('active');
+    if (key === 'ShiftLeft' || key === 'ShiftRight') {
+      KEYBOARD.untoggleShift();
+    }
   },
 };
 
